@@ -1,11 +1,24 @@
+//1
 //HTTP/1.1 Protocol => L7 Protocol, uses TCP, communication via messages instead of stream data.
 //SERVER: TCP Listener <=> HTTP Parser <=> Handler
-//Server is composed of three of them. First request taken from TCP connection, then HTTP parser parses the message.
+//Server is composed of three of above. First request taken from TCP connection, then HTTP parser parses the message.
 //According to message handler is used for function process. These are in a single thread, so it is handling a single request at a time.
 #![allow(non_snake_case)]
 
+mod server; //because server.rs exists outside, we must specify that we will use server module. Then, it takes this module into here.
+mod http; //create http/mod.rs to use method and request modules
+
+use server::Server;
+use http::Request;//can be used only it with "pub use .." in mod.rs,  otherwise use: //use http::request::Request; 
+use http::Method; //use http::method::Method;
+
+
 fn main(){
     
+    let server = Server::new("127.0.0.1:8080".to_string()); //write server::Server::new(...) if we didnot write "use server::Server"; 
+    server.run();
+
+    //2
     /* 
     //String:
     let string = String::from("127.0.0.1:8080"); //String type string
@@ -21,23 +34,47 @@ fn main(){
     //So be careful for that.
     */
 
-    let server = Server::new("127.0.0.1:8080".to_string());
-    server.run();
+    //3
+    /*
+    //Enumeration:
+    let get= Method::GET("abdc".to_string());
+    let delete= Method::DELETE(100);
+    let post = Method::POST;
+    let put= Method::PUT;
+    //Note: Enumerations is actually giving a name to numbers to understand easily from the names.
+    //The names in enum starts with 0 and continue incrementing 1 if we didnt specify a value. For example GET=0, DELETE=1,PUT=3
+    //If we said below POST=5, then the enum becomes like GET=0,DELETE=1,POST=5,PUT=6,HEAD=7.
+    //We can use enums with HTTP Codes by assigning correct values.
+    //Also enums can take arguments in different types and enum object size is specified in compile time according to the largest argument size.
+    */
+
 }
 
-struct Server{
-    addr:String,
-}
-
-//Functionality of struct is provided by two way: "methods" and "associated functions"(like 'new' function)
-impl Server{
-    fn new(addr:String) -> Self{ //We can use "Server" instead of Self
-        Self { addr }
+//4
+//Get http/request, http/method modules from outside instead of writing them to main file. So take them to comment. I leave them here only for example.
+/* 
+mod http{
+    pub mod request{
+        use super::method::Method;
+        pub struct Request{
+            query_string: Option<String>, 
+            method: Method, 
+        }
     }
-//not to take ownership of self/this, use &self, so 'run function' only borrows the Server object, 
-//so when the "run function" finishes, object will not deallocated.
-    fn run(self){ //&self
-        println!("Listening on {}",self.addr);
+    pub mod method{
+        pub enum Method{
+            GET, 
+        }
+    }
 }
+*/
+/*
+GET /user?id=10 HTTP/1.1\r\n
+HEADERS
+BODY
+*/
 
-}
+
+
+
+
