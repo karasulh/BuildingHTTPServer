@@ -1,5 +1,7 @@
+use crate::http::{Request, request}; //crate means root module. In this case root modules is main, and reach http module from main.rs because "mod http" is in main.
 use std::net::TcpListener; //for TCP connection
 use std::io::Read; //to read stream
+use std::convert::TryFrom; //for string and array conversion
 
 pub struct Server{
     addr:String,
@@ -25,7 +27,15 @@ impl Server{
                     let mut buffer = [0;1024];
                     match stream.read(&mut buffer){//read the socket and writes content into buffer
                         Ok(_) => {
-                             println!("Received a request: {}",String::from_utf8_lossy(&buffer));//with "lossy", the invalid char will not a problem.  
+                            println!("Received a request: {}",String::from_utf8_lossy(&buffer));//with "lossy", the invalid char will not a problem.  
+        
+                            //Request::try_from(&buffer as &[u8]);//this and below, both way, is okay for usage try_from because compiler wants it as slice. 
+                            match Request::try_from(&buffer[..]){
+                                Ok(request) => {},
+                                Err(e) => println!("Failed to parse a request: {}",e),
+                            }
+                            //let res: &Result<Request,_> = &buffer[..].try_into(); //With try_from implementation, automatically opposite case is generated.
+
                         }
                         Err(e) => println!("Failed to read from connection: {}",e),
                     }
