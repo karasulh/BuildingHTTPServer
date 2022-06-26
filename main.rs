@@ -4,6 +4,8 @@
 //Server is composed of three of above. First request taken from TCP connection, then HTTP parser parses the message.
 //According to message handler is used for function process. These are in a single thread, so it is handling a single request at a time.
 #![allow(non_snake_case)]
+#![allow(unused_imports)]
+#![allow(dead_code)]
 
 mod server; //because server.rs exists outside, we must specify that we will use server module. Then, it takes this module into here.
 mod http; //create http/mod.rs to use method and request modules
@@ -11,7 +13,6 @@ mod http; //create http/mod.rs to use method and request modules
 use server::Server;
 use http::Request;//can be used only it with "pub use .." in mod.rs,  otherwise use: //use http::request::Request; 
 use http::Method; //use http::method::Method;
-
 
 fn main(){
     
