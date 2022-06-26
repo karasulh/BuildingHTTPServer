@@ -33,6 +33,9 @@ impl Server{
                             match Request::try_from(&buffer[..]){
                                 Ok(request) => {
                                     /* 
+                                    //9
+                                    //Lifetime is not giving us a chance to choose how long variables live. Lifetime is only saying to compiler that
+                                    //some references are related the same memory and they should share the same lifetime.  
                                     //If we give a lifetime to buffer related to request object, 
                                     //then the compiler can not allow us to change the buffer in here. Because after changing we use request object here again.
                                     //But if we dont give a lifetime to buffer in "TryFrom", the compiler allows us to change buffer here because
