@@ -31,7 +31,16 @@ impl Server{
         
                             //Request::try_from(&buffer as &[u8]);//this and below, both way, is okay for usage try_from because compiler wants it as slice. 
                             match Request::try_from(&buffer[..]){
-                                Ok(request) => {},
+                                Ok(request) => {
+                                    /* 
+                                    //If we give a lifetime to buffer related to request object, 
+                                    //then the compiler can not allow us to change the buffer in here. Because after changing we use request object here again.
+                                    //But if we dont give a lifetime to buffer in "TryFrom", the compiler allows us to change buffer here because
+                                    //it thinks there is no relation with buffer and request object.
+                                    buffer[1]=0;
+                                    let a=request;
+                                    */
+                                },
                                 Err(e) => println!("Failed to parse a request: {}",e),
                             }
                             //let res: &Result<Request,_> = &buffer[..].try_into(); //With try_from implementation, automatically opposite case is generated.

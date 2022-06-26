@@ -8,24 +8,32 @@ use std::fmt::{Debug, Display, Formatter, Result as FmtResult}; //We can show th
 use std::str; //to convert slice to &str
 use std::str::Utf8Error; //"?" will converts utf-8 error to another error, so we implement this.
 
-
-pub struct Request{
-    path: String,
-    query_string: Option<String>, //Use Option for the case query_string is empty, Option makes it safe. If there is no String, it returns None.
+//We will use a lifetime 'buf for the slices because, when the some functions are finished, array(buffer) will be deallocated but we will need this.
+//To prevent deallocation, we give slices a lifetime. Their lifetime are the same with Request object's lifetime. 
+pub struct Request<'buf>{
+    path: &'buf str, //not to use heap, we use &str with lifetime not String.
+    query_string: Option<&'buf str>, //Use Option for the case query_string is empty, Option makes it safe. If there is no String, it returns None.
     method: Method, //super::method::Method //Use "super" to reach high level module, like http in this case.
 }
 
-impl Request{
+impl<'buf> Request<'buf>{
     fn from_byte_array(buf: &[u8]) -> Result<Self,String>{
         unimplemented!();
     }
 }
 
-impl TryFrom<&[u8]> for Request{ //When we implement this, automatically compiler implements try_into trait for opposite case.
+impl<'buf> TryFrom<&'buf [u8]> for Request<'buf> { //When we implement this, automatically compiler implements try_into trait for opposite case.
     type Error = ParseError;
 
     //GET /search?name_abc&sort=1 HTTP/1.1\r\n...HEADERS...  <= Our Aim: To parse this.
-    fn try_from(buf: &[u8]) -> Result<Self, Self::Error> {
+    //8
+    //We know from the Request struct lifetime so, return is: Result<Request<'buf>, Self::Error>
+    //However, compiler initially thinks like below, so there will be some contradiction between lifetime 'a and 'buf. To prevent this, we must say
+    //the arguments of try_from's buf's lifetime is the same as Request lifetime, 'buf.
+    //fn try_from<'a>(buf: &'a [u8]) -> Result<Request<'buf>, Self::Error> { }
+    //Solve this like that:
+    fn try_from(buf: &'buf [u8]) -> Result<Self, Self::Error> { // Result<Request<'buf>, Self::Error> 
+
         /*
         match str::from_utf8(buf){
             Ok(request) => {}
@@ -42,6 +50,7 @@ impl TryFrom<&[u8]> for Request{ //When we implement this, automatically compile
         //But if we use like that, this question mark tries to convert utf-8 error message to ParseError, so we will implement it with From<Utf8Error>
         let request = str::from_utf8(buf)?; //We must impl From<Utf8Error> for ParseError to use it.
         
+
         /*//This method is missing because, we should return Result(Ok) not Option(Some),so use the below method
         match get_next_word(request){
             Some((method,request)) => {}
@@ -50,7 +59,7 @@ impl TryFrom<&[u8]> for Request{ //When we implement this, automatically compile
         */
         ////GET /search?name_abc&sort=1 HTTP/1.1\r\n...HEADERS...  <= Our Aim: To parse this.
         let (method, request)= get_next_word(request).ok_or(ParseError::InvalidRequest)?;//It will also convert Option to Result
-        let (path, request) = get_next_word(request).ok_or(ParseError::InvalidRequest)?;
+        let (mut path, request) = get_next_word(request).ok_or(ParseError::InvalidRequest)?;
         let (protocol,_) = get_next_word(request).ok_or(ParseError::InvalidRequest)?;
 
         if protocol != "HTTP/1.1" {
@@ -60,9 +69,43 @@ impl TryFrom<&[u8]> for Request{ //When we implement this, automatically compile
         //It converts from string to something //we implement FromStr for Method and From for MethodError(so, it automatically converts Error to MethodError.).
         let method:Method = method.parse()? ; //But we must specify the target conversion type "Method"
 
-        unimplemented!();
+        let mut query_string = None;
+        
+        //Parsing path string can be done with three way:
+        /*
+        match path.find('?') { //first way
+            Some(i) => {
+                query_string = Some(&path[i+1..]);
+                path = &path[..i]; //take real path like "search" in GET /search?name...
+            }
+            None => {}
+        }
+
+        let q=path.find('?'); //second way without writing "None => {}"
+        if q.is_some(){
+            let i=q.unwrap();
+            query_string=Some(&path[i+1..]);
+            path = &path[..i];
+        }
+        */
+        if let Some(i) = path.find('?'){ //third way with "if let" //beatiful and shortest one
+            query_string = Some(&path[i+1..]);
+            path = &path[..i];
+        }
+        
+        Ok(Self{
+            path,
+            query_string,
+            method,
+        })
+        
     }
 }
+
+//7
+//If we have two arguments for this function, we must define a lifetime for each them, but if we have only one variable like in the real case, 
+//the compiler can understand the return objects lifetime is equal to one argument's lifetime.
+//fn get_next_word<'a,'b>(request: &'a str, b: &'b str ) -> Option<(&'a str,&'a str)>
 
 fn get_next_word(request: &str) -> Option<(&str,&str)>{//to parse message, returns tuple Option
     for(i,c) in request.chars().enumerate(){
