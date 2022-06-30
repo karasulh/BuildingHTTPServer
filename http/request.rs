@@ -7,12 +7,13 @@ use std::error::Error;
 use std::fmt::{Debug, Display, Formatter, Result as FmtResult}; //We can show them at the same time with {} 
 use std::str; //to convert slice to &str
 use std::str::Utf8Error; //"?" will converts utf-8 error to another error, so we implement this.
+use super::{QueryString,QueryStringValue};//define queryString struct instead of basic string
 
 //We will use a lifetime 'buf for the slices because, when the some functions are finished, array(buffer) will be deallocated but we will need this.
 //To prevent deallocation, we give slices a lifetime. Their lifetime are the same with Request object's lifetime. 
 pub struct Request<'buf>{
     path: &'buf str, //not to use heap, we use &str with lifetime not String.
-    query_string: Option<&'buf str>, //Use Option for the case query_string is empty, Option makes it safe. If there is no String, it returns None.
+    query_string: Option<QueryString<'buf>>, //Use Option for the case query_string is empty, Option makes it safe. If there is no String, it returns None.
     method: Method, //super::method::Method //Use "super" to reach high level module, like http in this case.
 }
 
@@ -89,7 +90,7 @@ impl<'buf> TryFrom<&'buf [u8]> for Request<'buf> { //When we implement this, aut
         }
         */
         if let Some(i) = path.find('?'){ //third way with "if let" //beatiful and shortest one
-            query_string = Some(&path[i+1..]);
+            query_string = Some(QueryString::from(&path[i+1..])); //Conversion from string to QueryString with parse process
             path = &path[..i];
         }
         
