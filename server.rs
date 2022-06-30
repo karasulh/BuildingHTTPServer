@@ -32,6 +32,7 @@ impl Server{
                             //Request::try_from(&buffer as &[u8]);//this and below, both way, is okay for usage try_from because compiler wants it as slice. 
                             match Request::try_from(&buffer[..]){
                                 Ok(request) => {
+                                    dbg!(request);
                                     /* 
                                     //9
                                     //Lifetime is not giving us a chance to choose how long variables live. Lifetime is only saying to compiler that

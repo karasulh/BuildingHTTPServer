@@ -1,5 +1,6 @@
 use std::str::FromStr; //to parse a value from string
 
+#[derive(Debug)]
 pub enum Method{
     GET, //GET(String)
     DELETE, //DELETE(u64)

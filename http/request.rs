@@ -7,10 +7,11 @@ use std::error::Error;
 use std::fmt::{Debug, Display, Formatter, Result as FmtResult}; //We can show them at the same time with {} 
 use std::str; //to convert slice to &str
 use std::str::Utf8Error; //"?" will converts utf-8 error to another error, so we implement this.
-use super::{QueryString,QueryStringValue};//define queryString struct instead of basic string
+use super::{QueryString};//define queryString struct instead of basic string
 
 //We will use a lifetime 'buf for the slices because, when the some functions are finished, array(buffer) will be deallocated but we will need this.
 //To prevent deallocation, we give slices a lifetime. Their lifetime are the same with Request object's lifetime. 
+#[derive(Debug)]
 pub struct Request<'buf>{
     path: &'buf str, //not to use heap, we use &str with lifetime not String.
     query_string: Option<QueryString<'buf>>, //Use Option for the case query_string is empty, Option makes it safe. If there is no String, it returns None.

@@ -1,11 +1,13 @@
 use std::collections::HashMap;
 
 //a=1&b=2&c&d=&e===&d=7&d=abc //Query String example
+#[derive(Debug)]
 pub struct QueryString<'buf>{
     data: HashMap<&'buf str, Value<'buf>>,
 }
 
 //It is used to differentiate single value and multiple values(array). For example 'd' in the example use more than one, so it is like an array. 
+#[derive(Debug)]
 pub enum Value<'buf>{
     Single(&'buf str), //like 'a' in example
     Multiple(Vec<&'buf str>), //like 'd' in example //Length isnot known at compile time, so use Vector.
