@@ -3,6 +3,7 @@ pub use method::Method;
 pub use request::ParseError;
 pub use query_string::{QueryString,Value as QueryStringValue}; //Value is generic, so we changed its name which is use to reach it.
 pub use response::Response;
+pub use status_code::StatusCode;
 
 pub mod response;
 pub mod query_string;//to define queryString for Request
