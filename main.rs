@@ -15,11 +15,15 @@ use website_handler::WebsiteHandler;
 use server::Server;
 use http::Request;//can be used only it with "pub use .." in mod.rs,  otherwise use: //use http::request::Request; 
 use http::Method; //use http::method::Method;
+use std::env;//to use enviroment variables / to reach paths
 
 fn main(){
-    
+
+    let default_path = format!("{}/public", env!("CARGO_MANIFEST_DIR")); //env!("CARGO_MANIFEST_DIR") returns the location of Cargo.toml
+    let public_path = env::var("PUBLIC_PATH").unwrap_or(default_path); //If "public path" enviroment variable exists, use it. Else, use default_path
+    println!("public path: {}",public_path);
     let server = Server::new("127.0.0.1:8080".to_string()); //write server::Server::new(...) if we didnot write "use server::Server"; 
-    server.run(WebsiteHandler);
+    server.run(WebsiteHandler::new(public_path));
 
     //2
     /* 

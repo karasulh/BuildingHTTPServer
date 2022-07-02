@@ -19,6 +19,20 @@ pub struct Request<'buf>{
 }
 
 impl<'buf> Request<'buf>{
+    
+    //For getter functions, return a reference of the arguments
+    pub fn path(&self) -> &str {
+        &self.path
+    }
+
+    pub fn method(&self) -> &Method {
+        &self.method
+    }
+
+    pub fn query_string(&self)-> Option<&QueryString>{ //we are interested QueryString in the Option as return value, so use this trick:
+        self.query_string.as_ref() //as_ref: "&Option<QeuryString> -> Option<&QueryString>"
+    }
+    
     fn from_byte_array(buf: &[u8]) -> Result<Self,String>{
         unimplemented!();
     }
