@@ -5,6 +5,7 @@ pub use query_string::{QueryString,Value as QueryStringValue}; //Value is generi
 pub use response::Response;
 pub use status_code::StatusCode;
 
+pub mod status_code;
 pub mod response;
 pub mod query_string;//to define queryString for Request
 pub mod request; //we must write this to reach these modules.

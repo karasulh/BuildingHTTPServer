@@ -9,7 +9,9 @@
 
 mod server; //because server.rs exists outside, we must specify that we will use server module. Then, it takes this module into here.
 mod http; //create http/mod.rs to use method and request modules
+mod website_handler;
 
+use website_handler::WebsiteHandler;
 use server::Server;
 use http::Request;//can be used only it with "pub use .." in mod.rs,  otherwise use: //use http::request::Request; 
 use http::Method; //use http::method::Method;
@@ -17,7 +19,7 @@ use http::Method; //use http::method::Method;
 fn main(){
     
     let server = Server::new("127.0.0.1:8080".to_string()); //write server::Server::new(...) if we didnot write "use server::Server"; 
-    server.run();
+    server.run(WebsiteHandler);
 
     //2
     /* 
